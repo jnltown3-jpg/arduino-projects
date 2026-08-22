@@ -1,44 +1,18 @@
 const int SEG_A = 13;
-const int DIGIT_4 = 12;
 const int SEG_F = 11;
-const int DIGIT_3 = 10;
-const int DIGIT_2 = 9;
 const int SEG_B = 8;
 const int SEG_E = 7;
 const int SEG_D = 6;
-const int SEG_DP = 5;
 const int SEG_C = 4;
 const int SEG_G = 3;
-const int DIGIT_1 = 2;
-const int BUTTON_PIN = A0;
 
-int x = 3;
+const int D1 = 5;
+const int D2 = 9;
 
-void setSegments(bool a, bool b, bool c, bool d, bool e, bool f, bool g) {
-  digitalWrite(SEG_A, a);
-  digitalWrite(SEG_B, b);
-  digitalWrite(SEG_C, c);
-  digitalWrite(SEG_D, d);
-  digitalWrite(SEG_E, e);
-  digitalWrite(SEG_F, f);
-  digitalWrite(SEG_G, g);
-  digitalWrite(SEG_DP, LOW);
-}
+const int UP_BUTTON = A0;
+const int DOWN_BUTTON = A1;
 
-void showNumber(int number) {
-  switch (number) {
-    case 0: setSegments(HIGH, HIGH, HIGH, HIGH, HIGH, HIGH, LOW); break;
-    case 1: setSegments(LOW, HIGH, HIGH, LOW, LOW, LOW, LOW); break;
-    case 2: setSegments(HIGH, HIGH, LOW, HIGH, HIGH, LOW, HIGH); break;
-    case 3: setSegments(HIGH, HIGH, HIGH, HIGH, LOW, LOW, HIGH); break;
-    case 4: setSegments(LOW, HIGH, HIGH, LOW, LOW, HIGH, HIGH); break;
-    case 5: setSegments(HIGH, LOW, HIGH, HIGH, LOW, HIGH, HIGH); break;
-    case 6: setSegments(HIGH, LOW, HIGH, HIGH, HIGH, HIGH, HIGH); break;
-    case 7: setSegments(HIGH, HIGH, HIGH, LOW, LOW, LOW, LOW); break;
-    case 8: setSegments(HIGH, HIGH, HIGH, HIGH, HIGH, HIGH, HIGH); break;
-    case 9: setSegments(HIGH, HIGH, HIGH, HIGH, LOW, HIGH, HIGH); break;
-  }
-}
+int x = 0;
 
 void setup() {
   pinMode(SEG_A, OUTPUT);
@@ -48,27 +22,85 @@ void setup() {
   pinMode(SEG_E, OUTPUT);
   pinMode(SEG_F, OUTPUT);
   pinMode(SEG_G, OUTPUT);
-  pinMode(SEG_DP, OUTPUT);
-  pinMode(DIGIT_1, OUTPUT);
-  pinMode(DIGIT_2, OUTPUT);
-  pinMode(DIGIT_3, OUTPUT);
-  pinMode(DIGIT_4, OUTPUT);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
+  pinMode(UP_BUTTON, INPUT_PULLUP);
+  pinMode(DOWN_BUTTON, INPUT_PULLUP);
+  digitalWrite(D1, HIGH);
+  digitalWrite(D2, HIGH);
+}
+
+void showNumber(int number) {
+  if (number == 0) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, HIGH); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, HIGH); digitalWrite(SEG_D, HIGH); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, LOW); }
+  if (number == 1) { digitalWrite(SEG_A, LOW); digitalWrite(SEG_F, LOW); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, LOW); digitalWrite(SEG_D, LOW); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, LOW); }
+  if (number == 2) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, LOW); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, HIGH); digitalWrite(SEG_D, HIGH); digitalWrite(SEG_C, LOW); digitalWrite(SEG_G, HIGH); }
+  if (number == 3) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, LOW); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, LOW); digitalWrite(SEG_D, HIGH); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, HIGH); }
+  if (number == 4) { digitalWrite(SEG_A, LOW); digitalWrite(SEG_F, HIGH); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, LOW); digitalWrite(SEG_D, LOW); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, HIGH); }
+  if (number == 5) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, HIGH); digitalWrite(SEG_B, LOW); digitalWrite(SEG_E, LOW); digitalWrite(SEG_D, HIGH); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, HIGH); }
+  if (number == 6) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, HIGH); digitalWrite(SEG_B, LOW); digitalWrite(SEG_E, HIGH); digitalWrite(SEG_D, HIGH); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, HIGH); }
+  if (number == 7) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, LOW); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, LOW); digitalWrite(SEG_D, LOW); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, LOW); }
+  if (number == 8) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, HIGH); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, HIGH); digitalWrite(SEG_D, HIGH); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, HIGH); }
+  if (number == 9) { digitalWrite(SEG_A, HIGH); digitalWrite(SEG_F, HIGH); digitalWrite(SEG_B, HIGH); digitalWrite(SEG_E, LOW); digitalWrite(SEG_D, HIGH); digitalWrite(SEG_C, HIGH); digitalWrite(SEG_G, HIGH); }
+}
+
+void turnBothDigitsOff() {
+  digitalWrite(D1, HIGH);
+  digitalWrite(D2, HIGH);
+}
+
+void showDigit(int digitPin, int number) {
+  turnBothDigitsOff();
+  delayMicroseconds(100);
+  showNumber(number);
+  digitalWrite(digitPin, LOW);
+  delay(3);
+  digitalWrite(digitPin, HIGH);
+}
+
+void showTwoDigitNumber(int number) {
+  int ones = number % 10;
+  int tens = number / 10;
+  showDigit(D1, ones);
+  showDigit(D2, tens);
+}
+
+void displayNumberFor(int number, int duration) {
+  unsigned long startTime = millis();
+  while (millis() - startTime < duration) {
+    showTwoDigitNumber(number);
+  }
+}
+
+void waitForRelease(int buttonPin) {
+  while (digitalRead(buttonPin) == LOW) {
+    showTwoDigitNumber(x);
+  }
+  delay(30);
 }
 
 void loop() {
-  digitalWrite(DIGIT_2, HIGH);
-  digitalWrite(DIGIT_3, HIGH);
-  digitalWrite(DIGIT_4, HIGH);
-  digitalWrite(DIGIT_1, LOW);
-  showNumber(x);
-  if (digitalRead(BUTTON_PIN) == LOW) {
+  showTwoDigitNumber(x);
+
+  if (digitalRead(UP_BUTTON) == LOW) {
     delay(30);
-    if (digitalRead(BUTTON_PIN) == LOW) {
-      x = (x + 1) % 10;
-      while (digitalRead(BUTTON_PIN) == LOW) {
-        delay(10);
+    if (digitalRead(UP_BUTTON) == LOW) {
+      x += 1;
+      if (x > 99) {
+        x = 0;
       }
+      waitForRelease(UP_BUTTON);
+    }
+  }
+
+  else if (digitalRead(DOWN_BUTTON) == LOW) {
+    delay(30);
+    if (digitalRead(DOWN_BUTTON) == LOW) {
+      waitForRelease(DOWN_BUTTON);
+      while (x > 0) {
+        displayNumberFor(x, 500);
+        x -= 1;
+      }
+      displayNumberFor(0, 500);
     }
   }
 }
